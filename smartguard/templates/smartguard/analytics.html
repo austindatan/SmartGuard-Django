@@ -335,8 +335,7 @@
                         <td>{{ s.building }}</td>
                         <td class="mono">#{{ s.sensor_id }}</td>
                         <td style="color:var(--text-secondary)">{{ s.appliances }}</td>
-                        <td><span class="pill {% if s.spike_count > 5 %}danger{% else %}warning{% endif %}">{{
-                            s.spike_count }} spikes</span></td>
+                        <td><span class="pill {% if s.spike_count > 5 %}danger{% else %}warning{% endif %}">{{s.spike_count}} spikes</span></td>
                         <td class="mono" style="color:var(--danger)">{{ s.max_power|floatformat:1 }} W</td>
                       </tr>
                       {% empty %}
