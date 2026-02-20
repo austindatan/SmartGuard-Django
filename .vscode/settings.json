@@ -1,0 +1,12 @@
+{
+    "editor.formatOnSave": false,
+    "[html]": {
+        "editor.formatOnSave": false
+    },
+    "[python]": {
+        "editor.formatOnSave": false
+    },
+    "[css]": {
+        "editor.formatOnSave": false
+    }
+}

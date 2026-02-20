@@ -1,0 +1,1249 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartGuard – Energy Analytics Dashboard</title>
+  <meta name="description"
+    content="Real-time energy analytics for SmartGuard – monitor power usage, anomalies, appliance spikes, and alert effectiveness across all buildings." />
+  <link rel="stylesheet" href="{% static 'smartguard/css/dashboard.css' %}" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+  <div class="sg-layout">
+
+    <!-- ══════════════════════ SIDEBAR ══════════════════════ -->
+    <aside class="sg-sidebar">
+      <div class="sg-sidebar-logo">
+        <div class="sg-logo-icon">⚡</div>
+        <div>
+          <div class="sg-logo-text">SmartGuard</div>
+          <div class="sg-logo-sub">Energy Intelligence</div>
+        </div>
+      </div>
+
+      <nav class="sg-nav">
+        <div class="sg-nav-section">Overview</div>
+        <a href="#kpis" class="sg-nav-item active">
+          <span class="nav-icon">📊</span> Dashboard
+        </a>
+        <a href="#energy-trend" class="sg-nav-item">
+          <span class="nav-icon">📈</span> Energy Trends
+        </a>
+        <a href="#buildings" class="sg-nav-item">
+          <span class="nav-icon">🏢</span> Buildings
+        </a>
+
+        <div class="sg-nav-section">Key Insights</div>
+        <a href="#spikes" class="sg-nav-item">
+          <span class="nav-icon">⚡</span> Appliance Spikes
+        </a>
+        <a href="#overload-risk" class="sg-nav-item">
+          <span class="nav-icon">🕐</span> Overload Risk
+        </a>
+        <a href="#anomaly-btype" class="sg-nav-item">
+          <span class="nav-icon">🏗️</span> By Building Type
+        </a>
+        <a href="#power-factor" class="sg-nav-item">
+          <span class="nav-icon">⚙️</span> Power Factor
+        </a>
+        <a href="#alerts" class="sg-nav-item">
+          <span class="nav-icon">🔔</span> Alert Effectiveness
+        </a>
+
+        <div class="sg-nav-section">Data</div>
+        <a href="#anomalies-table" class="sg-nav-item">
+          <span class="nav-icon">📋</span> Recent Anomalies
+        </a>
+        <a href="#sensors" class="sg-nav-item">
+          <span class="nav-icon">📡</span> Sensors
+        </a>
+      </nav>
+
+      <div class="sg-sidebar-footer">
+        <div class="sg-sidebar-badge">
+          <span class="status-dot"></span>
+          Live Data · SQLite
+        </div>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════ MAIN ══════════════════════════ -->
+    <main class="sg-main">
+
+      <!-- HEADER -->
+      <header class="sg-header">
+        <div class="sg-header-left">
+          <h1>Energy Analytics Dashboard</h1>
+          <p>SmartGuard Monitoring System · All readings</p>
+        </div>
+        <div class="sg-header-right">
+          <span class="sg-badge success">● System Online</span>
+          <span class="sg-badge muted">{{ kpi.total_readings }} readings</span>
+          <span class="sg-timestamp" id="clock"></span>
+        </div>
+      </header>
+
+      <!-- CONTENT -->
+      <div class="sg-content">
+
+        <!-- ═══════════════ KPI CARDS ═══════════════ -->
+        <div class="sg-section" id="kpis">
+          <div class="sg-section-header">
+            <div class="sg-section-title-wrap">
+              <div class="sg-section-icon" style="background:rgba(99,102,241,0.15); color:var(--accent)">📊</div>
+              <div>
+                <div class="sg-section-title">System Overview</div>
+                <div class="sg-section-desc">Key performance indicators across all monitored assets</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sg-kpi-grid">
+            <div class="sg-kpi" style="--kpi-color:#6366f1">
+              <div class="sg-kpi-label">Buildings</div>
+              <div class="sg-kpi-value gradient-num">{{ kpi.total_buildings }}</div>
+              <div class="sg-kpi-sub">🏢 Monitored properties</div>
+            </div>
+            <div class="sg-kpi" style="--kpi-color:#22c55e">
+              <div class="sg-kpi-label">Sensors</div>
+              <div class="sg-kpi-value" style="color:var(--success)">{{ kpi.total_sensors }}</div>
+              <div class="sg-kpi-sub">📡 Active monitoring devices</div>
+            </div>
+            <div class="sg-kpi" style="--kpi-color:#3b82f6">
+              <div class="sg-kpi-label">Appliances</div>
+              <div class="sg-kpi-value" style="color:var(--info)">{{ kpi.total_appliances }}</div>
+              <div class="sg-kpi-sub">🔌 Tracked devices</div>
+            </div>
+            <div class="sg-kpi" style="--kpi-color:#f59e0b">
+              <div class="sg-kpi-label">Energy Readings</div>
+              <div class="sg-kpi-value" style="color:var(--warning)">{{ kpi.total_readings }}</div>
+              <div class="sg-kpi-sub">⚡ Data points collected</div>
+            </div>
+            <div class="sg-kpi" style="--kpi-color:#ef4444">
+              <div class="sg-kpi-label">Anomalies</div>
+              <div class="sg-kpi-value" style="color:var(--danger)">{{ kpi.total_anomalies }}</div>
+              <div class="sg-kpi-sub">⚠️ Events detected</div>
+            </div>
+            <div class="sg-kpi" style="--kpi-color:#a855f7">
+              <div class="sg-kpi-label">Active Alerts</div>
+              <div class="sg-kpi-value" style="color:#a855f7">{{ kpi.active_alerts }}</div>
+              <div class="sg-kpi-sub">🔴 Require attention</div>
+            </div>
+            <div class="sg-kpi" style="--kpi-color:#22c55e">
+              <div class="sg-kpi-label">Avg Power</div>
+              <div class="sg-kpi-value gradient-num" style="font-size:1.4rem">{{ kpi.avg_power }} W</div>
+              <div class="sg-kpi-sub">⚡ Across all sensors</div>
+            </div>
+            <div class="sg-kpi" style="--kpi-color:#14b8a6">
+              <div class="sg-kpi-label">Avg Power Factor</div>
+              <div class="sg-kpi-value" style="color:#14b8a6; font-size:1.4rem">{{ kpi.avg_power_factor }}</div>
+              <div class="sg-kpi-sub">⚙️ System efficiency</div>
+            </div>
+            <div class="sg-kpi" style="--kpi-color:#f97316">
+              <div class="sg-kpi-label">Peak Power</div>
+              <div class="sg-kpi-value" style="color:#f97316; font-size:1.3rem">{{ kpi.max_power }} W</div>
+              <div class="sg-kpi-sub">🔥 Maximum recorded</div>
+            </div>
+            <div class="sg-kpi" style="--kpi-color:#22c55e">
+              <div class="sg-kpi-label">Resolved Alerts</div>
+              <div class="sg-kpi-value" style="color:var(--success)">{{ kpi.resolved_alerts }}</div>
+              <div class="sg-kpi-sub">✅ Successfully handled</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════ ENERGY TREND ═══════════════ -->
+        <div class="sg-section" id="energy-trend">
+          <div class="sg-section-header">
+            <div class="sg-section-title-wrap">
+              <div class="sg-section-icon" style="background:rgba(59,130,246,0.15); color:var(--info)">📈</div>
+              <div>
+                <div class="sg-section-title">Energy Readings Timeline</div>
+                <div class="sg-section-desc">Power, voltage, current and power factor over time (first 100 readings)
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sg-card">
+            <div class="sg-card-header">
+              <div class="sg-card-title">Power Output Over Time (W)</div>
+              <span class="pill info">100 samples</span>
+            </div>
+            <div class="sg-card-body">
+              <div class="sg-card-chart-xl" style="height:280px">
+                <canvas id="trendPowerChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px" class="sg-grid-2">
+            <div class="sg-card">
+              <div class="sg-card-header">
+                <div class="sg-card-title">Voltage & Current</div>
+              </div>
+              <div class="sg-card-body">
+                <div class="sg-card-chart-lg">
+                  <canvas id="voltCurrentChart"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="sg-card">
+              <div class="sg-card-header">
+                <div class="sg-card-title">Power Factor Over Time</div>
+              </div>
+              <div class="sg-card-body">
+                <div class="sg-card-chart-lg">
+                  <canvas id="pfTrendChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════ BUILDINGS ═══════════════ -->
+        <div class="sg-section" id="buildings">
+          <div class="sg-section-header">
+            <div class="sg-section-title-wrap">
+              <div class="sg-section-icon" style="background:rgba(245,158,11,0.15); color:var(--warning)">🏢</div>
+              <div>
+                <div class="sg-section-title">Building Energy Overview</div>
+                <div class="sg-section-desc">Average and peak power consumption per building</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sg-grid-3-2" style="gap:16px; display:grid; grid-template-columns: 2fr 1fr;">
+            <div class="sg-card">
+              <div class="sg-card-header">
+                <div class="sg-card-title">Avg vs Peak Power per Building</div>
+              </div>
+              <div class="sg-card-body">
+                <div class="sg-card-chart-lg">
+                  <canvas id="buildingEnergyChart"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="sg-card">
+              <div class="sg-card-header">
+                <div class="sg-card-title">Building Details</div>
+              </div>
+              <div class="sg-card-body no-pad">
+                <div class="sg-table-wrap">
+                  <table class="sg-table">
+                    <thead>
+                      <tr>
+                        <th>Building</th>
+                        <th>Type</th>
+                        <th>Anomalies</th>
+                        <th>Avg PF</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for b in building_energy %}
+                      <tr>
+                        <td>{{ b.name }}</td>
+                        <td><span class="pill {% if b.type == 'Residential' %}info{% else %}warning{% endif %}">{{
+                            b.type }}</span></td>
+                        <td><span
+                            class="pill {% if b.anomaly_count > 3 %}danger{% elif b.anomaly_count > 0 %}warning{% else %}success{% endif %}">{{
+                            b.anomaly_count }}</span></td>
+                        <td class="mono">{{ b.avg_pf }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════ HIGHLIGHTED ANALYTICS ═══════════════ -->
+        <div class="sg-highlight-section">
+          <div class="sg-highlight-header">
+            <div class="sg-highlight-badge">✦ Key Insights</div>
+            <div>
+              <div class="sg-highlight-title">Critical Analytics Focus Areas</div>
+              <div class="sg-highlight-desc">Five targeted questions that reveal the most actionable intelligence from
+                your energy data</div>
+            </div>
+          </div>
+
+          <!-- ── Q1: APPLIANCE ENERGY SPIKES ── -->
+          <div class="sg-section" id="spikes" style="margin-bottom:24px">
+            <div class="sg-section-header">
+              <div class="sg-section-title-wrap">
+                <div class="sg-section-icon" style="background:rgba(239,68,68,0.15); color:var(--danger)">⚡</div>
+                <div>
+                  <div class="sg-section-title">① Appliance Energy Spikes per Building</div>
+                  <div class="sg-section-desc">Which appliances are responsible for the highest power surges in each
+                    building?</div>
+                </div>
+              </div>
+              <span class="sg-section-tag highlight">Highest Impact</span>
+            </div>
+
+            <div class="sg-grid-2">
+              <div class="sg-card">
+                <div class="sg-card-header">
+                  <div class="sg-card-title">Spike Count by Sensor/Building</div>
+                  <span class="pill danger">≥ 1.5× avg power</span>
+                </div>
+                <div class="sg-card-body">
+                  <div class="sg-card-chart-lg">
+                    <canvas id="spikeCountChart"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="sg-card">
+                <div class="sg-card-header">
+                  <div class="sg-card-title">Peak Power During Spikes (W)</div>
+                </div>
+                <div class="sg-card-body">
+                  <div class="sg-card-chart-lg">
+                    <canvas id="spikePeakChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sg-card" style="margin-top:16px">
+              <div class="sg-card-header">
+                <div class="sg-card-title">Spike Detail Table</div>
+              </div>
+              <div class="sg-card-body no-pad">
+                <div class="sg-table-wrap">
+                  <table class="sg-table">
+                    <thead>
+                      <tr>
+                        <th>Building</th>
+                        <th>Sensor ID</th>
+                        <th>Appliances</th>
+                        <th>Spike Events</th>
+                        <th>Peak Power (W)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for s in spikes_table %}
+                      <tr>
+                        <td>{{ s.building }}</td>
+                        <td class="mono">#{{ s.sensor_id }}</td>
+                        <td style="color:var(--text-secondary)">{{ s.appliances }}</td>
+                        <td><span class="pill {% if s.spike_count > 5 %}danger{% else %}warning{% endif %}">{{
+                            s.spike_count }} spikes</span></td>
+                        <td class="mono" style="color:var(--danger)">{{ s.max_power|floatformat:1 }} W</td>
+                      </tr>
+                      {% empty %}
+                      <tr>
+                        <td colspan="5" style="text-align:center; color:var(--text-muted); padding:24px">No spike data
+                          above threshold</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Q2: HOURLY OVERLOAD RISK ── -->
+          <div class="sg-section" id="overload-risk" style="margin-bottom:24px">
+            <div class="sg-section-header">
+              <div class="sg-section-title-wrap">
+                <div class="sg-section-icon" style="background:rgba(245,158,11,0.15); color:var(--warning)">🕐</div>
+                <div>
+                  <div class="sg-section-title">② Hourly Overload Risk Periods</div>
+                  <div class="sg-section-desc">What times of day carry the highest risk of electrical overload?</div>
+                </div>
+              </div>
+              <span class="sg-section-tag highlight">Time-Critical</span>
+            </div>
+
+            <div class="sg-grid-2">
+              <div class="sg-card">
+                <div class="sg-card-header">
+                  <div class="sg-card-title">Average Power by Hour of Day</div>
+                  <span class="pill warning">Risk Heatmap</span>
+                </div>
+                <div class="sg-card-body">
+                  <div class="sg-card-chart-lg">
+                    <canvas id="hourlyAvgChart"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="sg-card">
+                <div class="sg-card-header">
+                  <div class="sg-card-title">Peak Power by Hour</div>
+                  <span class="pill danger">Maximum Load</span>
+                </div>
+                <div class="sg-card-body">
+                  <div class="sg-card-chart-lg">
+                    <canvas id="hourlyMaxChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Q3: ANOMALY BY BUILDING TYPE ── -->
+          <div class="sg-section" id="anomaly-btype" style="margin-bottom:24px">
+            <div class="sg-section-header">
+              <div class="sg-section-title-wrap">
+                <div class="sg-section-icon" style="background:rgba(168,85,247,0.15); color:#a855f7">🏗️</div>
+                <div>
+                  <div class="sg-section-title">③ Anomaly Detection by Building Type</div>
+                  <div class="sg-section-desc">How does anomaly frequency and severity vary between Residential and
+                    Commercial buildings?</div>
+                </div>
+              </div>
+              <span class="sg-section-tag highlight">Structural Risk</span>
+            </div>
+
+            <div class="sg-grid-3">
+              <div class="sg-card">
+                <div class="sg-card-header">
+                  <div class="sg-card-title">Anomaly Count by Building Type</div>
+                </div>
+                <div class="sg-card-body">
+                  <div class="sg-card-chart">
+                    <canvas id="btypeCountChart"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="sg-card">
+                <div class="sg-card-header">
+                  <div class="sg-card-title">Avg Severity by Building Type</div>
+                </div>
+                <div class="sg-card-body">
+                  <div class="sg-card-chart">
+                    <canvas id="btypeSeverityChart"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="sg-card">
+                <div class="sg-card-header">
+                  <div class="sg-card-title">Anomaly Type Breakdown</div>
+                </div>
+                <div class="sg-card-body">
+                  <div class="sg-card-chart">
+                    <canvas id="atypeDonutChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Severity distribution -->
+            <div class="sg-card" style="margin-top:16px">
+              <div class="sg-card-header">
+                <div class="sg-card-title">Anomaly Severity Distribution (1–5)</div>
+              </div>
+              <div class="sg-card-body">
+                <div class="sg-card-chart">
+                  <canvas id="severityBarChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Q4: POWER FACTOR vs FAULTS ── -->
+          <div class="sg-section" id="power-factor" style="margin-bottom:24px">
+            <div class="sg-section-header">
+              <div class="sg-section-title-wrap">
+                <div class="sg-section-icon" style="background:rgba(20,184,166,0.15); color:#14b8a6">⚙️</div>
+                <div>
+                  <div class="sg-section-title">④ Power Factor Degradation vs Fault Occurrence</div>
+                  <div class="sg-section-desc">Is there a correlation between low power factor and anomaly likelihood?
+                  </div>
+                </div>
+              </div>
+              <span class="sg-section-tag highlight">Root Cause</span>
+            </div>
+
+            <div class="sg-grid-2">
+              <div class="sg-card">
+                <div class="sg-card-header">
+                  <div class="sg-card-title">Fault Rate (%) by Power Factor Range</div>
+                  <span class="pill accent">Correlation Analysis</span>
+                </div>
+                <div class="sg-card-body">
+                  <div class="sg-card-chart-lg">
+                    <canvas id="pfFaultRateChart"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="sg-card">
+                <div class="sg-card-header">
+                  <div class="sg-card-title">Total Readings vs Faults per PF Bucket</div>
+                </div>
+                <div class="sg-card-body">
+                  <div class="sg-card-chart-lg">
+                    <canvas id="pfStackedChart"></canvas>
+                  </div>
+
+                  <hr class="sg-divider" style="margin-top:16px">
+                  <div style="margin-top:10px">
+                    {% for i in pf_labels %}{% endfor %}
+                    <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:8px; font-weight:500">Fault
+                      Rate by PF Bucket</p>
+                    <div id="pf-bars"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Q5: ALERT EFFECTIVENESS ── -->
+          <div class="sg-section" id="alerts" style="margin-bottom:0">
+            <div class="sg-section-header">
+              <div class="sg-section-title-wrap">
+                <div class="sg-section-icon" style="background:rgba(34,197,94,0.15); color:var(--success)">🔔</div>
+                <div>
+                  <div class="sg-section-title">⑤ Alert Effectiveness in Reducing Energy Consumption</div>
+                  <div class="sg-section-desc">Do resolved alerts correlate with lower severity anomalies and reduced
+                    power usage?</div>
+                </div>
+              </div>
+              <span class="sg-section-tag highlight">Outcome Driven</span>
+            </div>
+
+            <div class="sg-grid-2">
+              <div class="sg-card">
+                <div class="sg-card-header">
+                  <div class="sg-card-title">Active vs Resolved Alerts</div>
+                </div>
+                <div class="sg-card-body">
+                  <div class="sg-card-chart" style="height:180px">
+                    <canvas id="alertStatusChart"></canvas>
+                  </div>
+
+                  <hr class="sg-divider" style="margin-top:16px">
+                  <div class="sg-compare-grid" style="margin-top:14px">
+                    <div class="sg-compare-card resolved">
+                      <div class="sg-compare-label">✅ Resolved</div>
+                      <div class="sg-compare-value" style="color:var(--success)">{{ kpi.resolved_alerts }}</div>
+                      <div style="font-size:0.7rem; color:var(--success)">Avg severity: {{
+                        alert_effectiveness.resolved_severity }}</div>
+                      <div style="font-size:0.7rem; color:var(--success)">Avg power: {{
+                        alert_effectiveness.resolved_power }} W</div>
+                    </div>
+                    <div class="sg-compare-card active-c">
+                      <div class="sg-compare-label">🔴 Active</div>
+                      <div class="sg-compare-value" style="color:var(--danger)">{{ kpi.active_alerts }}</div>
+                      <div style="font-size:0.7rem; color:var(--danger)">Avg severity: {{
+                        alert_effectiveness.active_severity }}</div>
+                      <div style="font-size:0.7rem; color:var(--danger)">Avg power: {{ alert_effectiveness.active_power
+                        }} W</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sg-card">
+                <div class="sg-card-header">
+                  <div class="sg-card-title">Severity & Power Comparison</div>
+                  <span class="pill success">{{ alert_effectiveness.resolution_rate }}% resolved</span>
+                </div>
+                <div class="sg-card-body">
+                  <div class="sg-card-chart-lg">
+                    <canvas id="alertEffChart"></canvas>
+                  </div>
+
+                  <div
+                    style="margin-top:16px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px;">
+                    <div
+                      style="font-size:0.72rem; color:var(--text-muted); font-weight:600; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:10px">
+                      Interpretation</div>
+                    <p style="font-size:0.78rem; color:var(--text-secondary); line-height:1.7">
+                      {% if alert_effectiveness.resolved_severity < alert_effectiveness.active_severity %} <span
+                        style="color:var(--success); font-weight:600">✅ Positive correlation detected.</span>
+                        Resolved alerts have a <strong style="color:var(--text-primary)">lower average anomaly
+                          severity</strong>
+                        ({{ alert_effectiveness.resolved_severity }} vs {{ alert_effectiveness.active_severity }}),
+                        suggesting that timely alert resolution is effective in managing high-severity events before
+                        they escalate.
+                        {% elif alert_effectiveness.resolved_severity > alert_effectiveness.active_severity %}
+                        <span style="color:var(--warning); font-weight:600">⚠️ Inverse pattern observed.</span>
+                        Resolved alerts show higher severity, which may indicate that high-severity events receive
+                        priority resolution. Alerts with severity {{ alert_effectiveness.active_severity }} still need
+                        attention.
+                        {% else %}
+                        <span style="color:var(--info); font-weight:600">ℹ️ Neutral effect observed.</span>
+                        Severity levels are comparable across both alert states. More data may be needed for a
+                        definitive conclusion.
+                        {% endif %}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- end highlight section -->
+
+        <!-- ═══════════════ ANOMALIES TABLE ═══════════════ -->
+        <div class="sg-section" id="anomalies-table">
+          <div class="sg-section-header">
+            <div class="sg-section-title-wrap">
+              <div class="sg-section-icon" style="background:rgba(239,68,68,0.15); color:var(--danger)">📋</div>
+              <div>
+                <div class="sg-section-title">Recent Anomalies</div>
+                <div class="sg-section-desc">Latest 10 detected anomaly events</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sg-card">
+            <div class="sg-card-body no-pad">
+              <div class="sg-table-wrap">
+                <table class="sg-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Timestamp</th>
+                      <th>Building</th>
+                      <th>Type</th>
+                      <th>Severity</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for a in recent_anomalies %}
+                    <tr>
+                      <td class="mono">#{{ a.anomaly_id }}</td>
+                      <td class="mono" style="white-space:nowrap">{{ a.timestamp|date:"Y-m-d H:i" }}</td>
+                      <td>{{ a.energy_reading.sensor.building.name }}</td>
+                      <td>
+                        <span class="pill {% if a.anomaly_type.name == 'Overload' %}danger{% else %}warning{% endif %}">
+                          {{ a.anomaly_type.name }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="sg-severity">
+                          <div class="sg-severity-bar">
+                            <div class="sg-severity-fill" style="width:{{ a.severity|floatformat:0 }}0%"></div>
+                          </div>
+                          <span class="mono" style="font-size:0.72rem; min-width:14px">{{ a.severity }}</span>
+                        </div>
+                      </td>
+                      <td style="color:var(--text-muted)">{{ a.description }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════ SENSORS ═══════════════ -->
+        <div class="sg-section" id="sensors">
+          <div class="sg-section-header">
+            <div class="sg-section-title-wrap">
+              <div class="sg-section-icon" style="background:rgba(20,184,166,0.15); color:#14b8a6">📡</div>
+              <div>
+                <div class="sg-section-title">Sensor Status Distribution</div>
+                <div class="sg-section-desc">Operational overview of all deployed sensors</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sg-grid-2">
+            <div class="sg-card">
+              <div class="sg-card-header">
+                <div class="sg-card-title">Status Breakdown</div>
+              </div>
+              <div class="sg-card-body">
+                <div class="sg-card-chart" style="height:200px">
+                  <canvas id="sensorStatusChart"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="sg-card">
+              <div class="sg-card-header">
+                <div class="sg-card-title">Anomalies per Building (Bar)</div>
+              </div>
+              <div class="sg-card-body">
+                <div class="sg-card-chart" style="height:200px">
+                  <canvas id="buildingAnomalyChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /sg-content -->
+
+      <footer class="sg-footer">
+        <span>SmartGuard Analytics · Django {{ django_version }}</span>
+        <span>Data sourced from SQLite · All timestamps UTC</span>
+      </footer>
+    </main>
+  </div>
+
+
+  <!-- ════════════════ SCRIPTS ════════════════ -->
+  <script>
+    /* ─── CLOCK ──────────────────────────────────────────────────────────── */
+    function updateClock() {
+      document.getElementById('clock').textContent =
+        new Date().toLocaleTimeString('en-US', { hour12: false });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    /* ─── CHART DEFAULTS ─────────────────────────────────────────────────── */
+    Chart.defaults.color = '#71717a';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+    Chart.defaults.font.family = 'Inter';
+    Chart.defaults.font.size = 11;
+    Chart.defaults.plugins.legend.position = 'bottom';
+    Chart.defaults.plugins.legend.labels.boxWidth = 10;
+    Chart.defaults.plugins.legend.labels.boxHeight = 10;
+    Chart.defaults.plugins.legend.labels.padding = 14;
+    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(17,17,19,0.97)';
+    Chart.defaults.plugins.tooltip.borderColor = 'rgba(255,255,255,0.08)';
+    Chart.defaults.plugins.tooltip.borderWidth = 1;
+    Chart.defaults.plugins.tooltip.padding = 10;
+    Chart.defaults.plugins.tooltip.titleFont = { weight: '600', size: 12 };
+
+    const PALETTE = [
+      '#6366f1', '#ec4899', '#f59e0b', '#22c55e',
+      '#3b82f6', '#a855f7', '#14b8a6', '#f97316'
+    ];
+
+    function makeGradient(ctx, color, alpha1 = 0.35, alpha2 = 0.0) {
+      const grad = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+      grad.addColorStop(0, color.replace(')', `, ${alpha1})`).replace('rgb', 'rgba'));
+      grad.addColorStop(1, color.replace(')', `, ${alpha2})`).replace('rgb', 'rgba'));
+      return grad;
+    }
+
+    /* ─── DATA FROM DJANGO ───────────────────────────────────────────────── */
+    /* prettier-ignore-start */
+    const DATA = {
+      trendLabels:        {{chart_trend_labels|safe}},
+      trendPower:         {{chart_trend_power|safe}},
+      trendPF:            {{chart_trend_pf|safe}},
+      trendVoltage:       {{chart_trend_voltage|safe}},
+      trendCurrent:       {{chart_trend_current|safe}},
+      hourlyLabels:       {{chart_hourly_labels|safe}},
+      hourlyAvg:          {{chart_hourly_avg_power|safe}},
+      hourlyMax:          {{chart_hourly_max_power|safe}},
+      hourlyCount:        {{chart_hourly_count|safe}},
+      spikeLabels:        {{chart_spike_labels|safe}},
+      spikeCounts:        {{chart_spike_counts|safe}},
+      spikeMaxPower:      {{chart_spike_max_power|safe}},
+      btypeLabels:        {{chart_btype_labels|safe}},
+      btypeCounts:        {{chart_btype_counts|safe}},
+      btypeSeverity:      {{chart_btype_severity|safe}},
+      atypeLabels:        {{chart_atype_labels|safe}},
+      atypeCounts:        {{chart_atype_counts|safe}},
+      pfLabels:           {{pf_labels|safe}},
+      pfFaultCounts:      {{pf_fault_counts|safe}},
+      pfTotalCounts:      {{pf_total_counts|safe}},
+      pfFaultRates:       {{pf_fault_rates|safe}},
+      severityLabels:     {{chart_severity_labels|safe}},
+      severityCounts:     {{chart_severity_counts|safe}},
+      sensorStatusLabels: {{chart_sensor_status_labels|safe}},
+      sensorStatusCounts: {{chart_sensor_status_counts|safe}},
+      buildingLabels:     {{chart_building_labels|safe}},
+      buildingAvgPwr:     {{chart_building_avg_pwr|safe}},
+      buildingMaxPwr:     {{chart_building_max_pwr|safe}},
+      buildingAnomalies:  {{chart_building_anomalies|safe}},
+      alertActive:        {{kpi.active_alerts}},
+      alertResolved:      {{kpi.resolved_alerts}},
+      alertResolveSev:    {{alert_effectiveness.resolved_severity}},
+      alertActiveSev:     {{alert_effectiveness.active_severity}},
+      alertResolvePwr:    {{alert_effectiveness.resolved_power}},
+      alertActivePwr:     {{alert_effectiveness.active_power}},
+    };
+    /* prettier-ignore-end */
+
+    /* ─── 1. POWER TREND ─────────────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('trendPowerChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: DATA.trendLabels,
+          datasets: [{
+            label: 'Power (W)',
+            data: DATA.trendPower,
+            borderColor: '#6366f1',
+            backgroundColor: 'rgba(99,102,241,0.1)',
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0.4,
+            fill: true,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { maxTicksLimit: 12 } },
+            y: { title: { display: true, text: 'Watts (W)' } }
+          }
+        }
+      });
+    })();
+
+    /* ─── 2. VOLTAGE & CURRENT ───────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('voltCurrentChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: DATA.trendLabels,
+          datasets: [
+            {
+              label: 'Voltage (V)',
+              data: DATA.trendVoltage,
+              borderColor: '#f59e0b',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.4,
+              yAxisID: 'yV',
+            },
+            {
+              label: 'Current (A)',
+              data: DATA.trendCurrent,
+              borderColor: '#3b82f6',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.4,
+              yAxisID: 'yC',
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: true } },
+          scales: {
+            x: { ticks: { maxTicksLimit: 8 } },
+            yV: { position: 'left', title: { display: true, text: 'V' } },
+            yC: { position: 'right', title: { display: true, text: 'A' }, grid: { drawOnChartArea: false } },
+          }
+        }
+      });
+    })();
+
+    /* ─── 3. POWER FACTOR TREND ──────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('pfTrendChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: DATA.trendLabels,
+          datasets: [{
+            label: 'Power Factor',
+            data: DATA.trendPF,
+            borderColor: '#14b8a6',
+            backgroundColor: 'rgba(20,184,166,0.1)',
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0.4,
+            fill: true,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { maxTicksLimit: 8 } },
+            y: { min: 0.5, max: 1.1, title: { display: true, text: 'PF (0–1)' } }
+          }
+        }
+      });
+    })();
+
+    /* ─── 4. BUILDING ENERGY ──────────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('buildingEnergyChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: DATA.buildingLabels,
+          datasets: [
+            { label: 'Avg Power (W)', data: DATA.buildingAvgPwr, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 5 },
+            { label: 'Peak Power (W)', data: DATA.buildingMaxPwr, backgroundColor: 'rgba(239,68,68,0.7)', borderRadius: 5 },
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: { y: { title: { display: true, text: 'Watts' } } }
+        }
+      });
+    })();
+
+    /* ─── 5. SPIKE COUNT CHART ───────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('spikeCountChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: DATA.spikeLabels,
+          datasets: [{
+            label: 'Spike Events',
+            data: DATA.spikeCounts,
+            backgroundColor: DATA.spikeCounts.map(v => v > 10 ? 'rgba(239,68,68,0.8)' : 'rgba(245,158,11,0.8)'),
+            borderRadius: 5,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: { x: { title: { display: true, text: 'Number of spike events' } } }
+        }
+      });
+    })();
+
+    /* ─── 6. SPIKE PEAK POWER ────────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('spikePeakChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: DATA.spikeLabels,
+          datasets: [{
+            label: 'Peak Power (W)',
+            data: DATA.spikeMaxPower,
+            backgroundColor: 'rgba(168,85,247,0.75)',
+            borderRadius: 5,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: { x: { title: { display: true, text: 'Peak Watts (W)' } } }
+        }
+      });
+    })();
+
+    /* ─── 7. HOURLY AVG ─────────────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('hourlyAvgChart').getContext('2d');
+      const maxVal = Math.max(...DATA.hourlyAvg);
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: DATA.hourlyLabels,
+          datasets: [{
+            label: 'Avg Power (W)',
+            data: DATA.hourlyAvg,
+            backgroundColor: DATA.hourlyAvg.map(v =>
+              v > maxVal * 0.85 ? 'rgba(239,68,68,0.85)' :
+                v > maxVal * 0.65 ? 'rgba(245,158,11,0.75)' : 'rgba(99,102,241,0.6)'
+            ),
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { title: { display: true, text: 'Avg Watts (W)' } } }
+        }
+      });
+    })();
+
+    /* ─── 8. HOURLY MAX ──────────────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('hourlyMaxChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: DATA.hourlyLabels,
+          datasets: [{
+            label: 'Max Power (W)',
+            data: DATA.hourlyMax,
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239,68,68,0.12)',
+            borderWidth: 2.5,
+            pointBackgroundColor: '#ef4444',
+            pointRadius: 3,
+            tension: 0.3,
+            fill: true,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { title: { display: true, text: 'Peak Watts (W)' } } }
+        }
+      });
+    })();
+
+    /* ─── 9. BTYPE COUNT ─────────────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('btypeCountChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: DATA.btypeLabels,
+          datasets: [{
+            data: DATA.btypeCounts,
+            backgroundColor: ['rgba(239,68,68,0.8)', 'rgba(245,158,11,0.8)', 'rgba(99,102,241,0.8)'],
+            borderColor: 'rgba(255,255,255,0.05)',
+            borderWidth: 2,
+            hoverOffset: 6,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          cutout: '62%',
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+    })();
+
+    /* ─── 10. BTYPE SEVERITY ─────────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('btypeSeverityChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: DATA.btypeLabels,
+          datasets: [{
+            label: 'Avg Severity',
+            data: DATA.btypeSeverity,
+            backgroundColor: PALETTE.slice(0, DATA.btypeLabels.length).map(c => c + 'cc'),
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { min: 0, max: 5, title: { display: true, text: 'Severity (1–5)' } } }
+        }
+      });
+    })();
+
+    /* ─── 11. ANOMALY TYPE DONUT ─────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('atypeDonutChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: DATA.atypeLabels,
+          datasets: [{
+            data: DATA.atypeCounts,
+            backgroundColor: ['rgba(239,68,68,0.85)', 'rgba(245,158,11,0.85)'],
+            borderColor: 'rgba(255,255,255,0.05)',
+            borderWidth: 2,
+            hoverOffset: 6,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          cutout: '55%',
+        }
+      });
+    })();
+
+    /* ─── 12. SEVERITY BAR ───────────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('severityBarChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: DATA.severityLabels,
+          datasets: [{
+            label: 'Count',
+            data: DATA.severityCounts,
+            backgroundColor: ['rgba(34,197,94,0.8)', 'rgba(59,130,246,0.8)', 'rgba(245,158,11,0.8)', 'rgba(249,115,22,0.8)', 'rgba(239,68,68,0.8)'],
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { title: { display: true, text: 'Anomaly Count' } } }
+        }
+      });
+    })();
+
+    /* ─── 13. PF FAULT RATE ─────────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('pfFaultRateChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: DATA.pfLabels,
+          datasets: [{
+            label: 'Fault Rate (%)',
+            data: DATA.pfFaultRates,
+            backgroundColor: DATA.pfFaultRates.map(v =>
+              v > 10 ? 'rgba(239,68,68,0.85)' :
+                v > 5 ? 'rgba(245,158,11,0.8)' : 'rgba(34,197,94,0.75)'
+            ),
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { title: { display: true, text: 'Fault Rate (%)' }, max: 100 } }
+        }
+      });
+    })();
+
+    /* ─── 14. PF STACKED ────────────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('pfStackedChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: DATA.pfLabels,
+          datasets: [
+            {
+              label: 'Normal Readings',
+              data: DATA.pfTotalCounts.map((t, i) => t - DATA.pfFaultCounts[i]),
+              backgroundColor: 'rgba(99,102,241,0.7)',
+              borderRadius: 0,
+              stack: 'stack',
+            },
+            {
+              label: 'Fault Readings',
+              data: DATA.pfFaultCounts,
+              backgroundColor: 'rgba(239,68,68,0.8)',
+              borderRadius: 5,
+              stack: 'stack',
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: { y: { stacked: true, title: { display: true, text: 'Readings' } } }
+        }
+      });
+
+      // Render PF progress bars
+      const container = document.getElementById('pf-bars');
+      DATA.pfLabels.forEach((label, i) => {
+        const rate = DATA.pfFaultRates[i];
+        const color = rate > 10 ? '#ef4444' : rate > 5 ? '#f59e0b' : '#22c55e';
+        container.innerHTML += `
+      <div class="sg-progress-row">
+        <div class="sg-progress-label">${label}</div>
+        <div class="sg-progress-track">
+          <div class="sg-progress-fill" style="width:${Math.min(rate, 100)}%; background:${color}"></div>
+        </div>
+        <div class="sg-progress-val">${rate}%</div>
+      </div>`;
+      });
+    })();
+
+    /* ─── 15. ALERT STATUS PIE ───────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('alertStatusChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Active', 'Resolved'],
+          datasets: [{
+            data: [DATA.alertActive, DATA.alertResolved],
+            backgroundColor: ['rgba(239,68,68,0.85)', 'rgba(34,197,94,0.85)'],
+            borderColor: 'rgba(255,255,255,0.05)',
+            borderWidth: 2,
+            hoverOffset: 6,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          cutout: '60%',
+        }
+      });
+    })();
+
+    /* ─── 16. ALERT EFFECTIVENESS ────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('alertEffChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Avg Severity', 'Avg Power (÷100 W)'],
+          datasets: [
+            {
+              label: 'Resolved',
+              data: [DATA.alertResolveSev, DATA.alertResolvePwr / 100],
+              backgroundColor: 'rgba(34,197,94,0.8)',
+              borderRadius: 6,
+            },
+            {
+              label: 'Active',
+              data: [DATA.alertActiveSev, DATA.alertActivePwr / 100],
+              backgroundColor: 'rgba(239,68,68,0.8)',
+              borderRadius: 6,
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    })();
+
+    /* ─── 17. SENSOR STATUS ─────────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('sensorStatusChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: DATA.sensorStatusLabels,
+          datasets: [{
+            data: DATA.sensorStatusCounts,
+            backgroundColor: ['rgba(34,197,94,0.85)', 'rgba(113,113,122,0.7)'],
+            borderColor: 'rgba(255,255,255,0.05)',
+            borderWidth: 2,
+            hoverOffset: 6,
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    })();
+
+    /* ─── 18. BUILDING ANOMALIES ─────────────────────────────────────────── */
+    (function () {
+      const ctx = document.getElementById('buildingAnomalyChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: DATA.buildingLabels,
+          datasets: [{
+            label: 'Anomalies',
+            data: DATA.buildingAnomalies,
+            backgroundColor: 'rgba(239,68,68,0.75)',
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { title: { display: true, text: 'Anomaly Count' } } }
+        }
+      });
+    })();
+
+    /* ─── SMOOTH NAV ─────────────────────────────────────────────────────── */
+    document.querySelectorAll('.sg-nav-item').forEach(link => {
+      link.addEventListener('click', function () {
+        document.querySelectorAll('.sg-nav-item').forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+
+</body>
+
+</html>
