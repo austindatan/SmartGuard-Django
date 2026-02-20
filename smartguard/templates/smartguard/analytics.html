@@ -247,13 +247,10 @@
                     <tbody>
                       {% for b in building_energy %}
                       <tr>
-                        <td>{{ b.name }}</td>
-                        <td><span class="pill {% if b.type == 'Residential' %}info{% else %}warning{% endif %}">{{
-                            b.type }}</span></td>
-                        <td><span
-                            class="pill {% if b.anomaly_count > 3 %}danger{% elif b.anomaly_count > 0 %}warning{% else %}success{% endif %}">{{
-                            b.anomaly_count }}</span></td>
-                        <td class="mono">{{ b.avg_pf }}</td>
+                        <td>{{b.name}}</td>
+                        <td><span class="pill {% if b.type == 'Residential' %}info{% else %}warning{% endif %}">{{b.type}}</span></td>
+                        <td><span class="pill {% if b.anomaly_count > 3 %}danger{% elif b.anomaly_count > 0 %}warning{% else %}success{% endif %}">{{b.anomaly_count}}</span></td>
+                        <td class="mono">{{b.avg_pf}}</td>
                       </tr>
                       {% endfor %}
                     </tbody>
@@ -526,18 +523,14 @@
                     <div class="sg-compare-card resolved">
                       <div class="sg-compare-label">✅ Resolved</div>
                       <div class="sg-compare-value" style="color:var(--success)">{{ kpi.resolved_alerts }}</div>
-                      <div style="font-size:0.7rem; color:var(--success)">Avg severity: {{
-                        alert_effectiveness.resolved_severity }}</div>
-                      <div style="font-size:0.7rem; color:var(--success)">Avg power: {{
-                        alert_effectiveness.resolved_power }} W</div>
+                      <div style="font-size:0.7rem; color:var(--success)">Avg severity: {{alert_effectiveness.resolved_severity}}</div>
+                      <div style="font-size:0.7rem; color:var(--success)">Avg power: {{alert_effectiveness.resolved_power}} W</div>
                     </div>
                     <div class="sg-compare-card active-c">
                       <div class="sg-compare-label">🔴 Active</div>
-                      <div class="sg-compare-value" style="color:var(--danger)">{{ kpi.active_alerts }}</div>
-                      <div style="font-size:0.7rem; color:var(--danger)">Avg severity: {{
-                        alert_effectiveness.active_severity }}</div>
-                      <div style="font-size:0.7rem; color:var(--danger)">Avg power: {{ alert_effectiveness.active_power
-                        }} W</div>
+                      <div class="sg-compare-value" style="color:var(--danger)">{{kpi.active_alerts}}</div>
+                      <div style="font-size:0.7rem; color:var(--danger)">Avg severity: {{alert_effectiveness.active_severity}}</div>
+                      <div style="font-size:0.7rem; color:var(--danger)">Avg power: {{alert_effectiveness.active_power}} W</div>
                     </div>
                   </div>
                 </div>

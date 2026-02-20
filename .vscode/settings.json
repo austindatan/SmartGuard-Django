@@ -1,12 +1,17 @@
 {
     "editor.formatOnSave": false,
+    "editor.formatOnType": false,
     "[html]": {
-        "editor.formatOnSave": false
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": null
     },
     "[python]": {
         "editor.formatOnSave": false
     },
     "[css]": {
         "editor.formatOnSave": false
+    },
+    "files.associations": {
+        "**/templates/**/*.html": "django-html"
     }
 }
